@@ -3,17 +3,17 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+#GET     /                           controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                     controllers.Assets.versioned(path="/public", file: Asset)
-GET     /Oryx2/getItemInterestsByUid/:uid/:num            controllers.Oryx2.getItemInterestsByUid(uid, num)
-GET     /Oryx2/getTagInterestsByUid/:uid/:num             controllers.Oryx2.getTagInterestsByUid(uid, num)
-GET     /Oryx2/getItemsDistribution/:num/:ratio           controllers.Oryx2.getItemsDistribution(num, ratio: Boolean)
-GET     /Oryx2/getTagsDistribution/:num/:ratio            controllers.Oryx2.getTagsDistribution(num, ratio: Boolean)
-GET     /testOryx2                                        controllers.TestAPI.oryx2
-GET     /testESJ                                          controllers.TestAPI.esj
-GET     /testRedis                                        controllers.TestAPI.redis
+#GET     /Oryx2/getItemInterestsByUid/:uid/:num            controllers.Oryx2.getItemInterestsByUid(uid, num)
+#GET     /Oryx2/getTagInterestsByUid/:uid/:num             controllers.Oryx2.getTagInterestsByUid(uid, num)
+#GET     /Oryx2/getItemsDistribution/:num/:ratio           controllers.Oryx2.getItemsDistribution(num, ratio: Boolean)
+#GET     /Oryx2/getTagsDistribution/:num/:ratio            controllers.Oryx2.getTagsDistribution(num, ratio: Boolean)
+#GET     /testOryx2                                        controllers.TestAPI.oryx2
+#GET     /testESJ                                          controllers.TestAPI.esj
+#GET     /testRedis                                        controllers.TestAPI.redis
 
 # ESJ address 10.18.255.207:19999
 # GET     /ESJ/judgeScene/:tracks                           controllers.ESJ.judgeScene(tracks)
