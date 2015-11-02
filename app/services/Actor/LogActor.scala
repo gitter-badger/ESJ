@@ -19,18 +19,21 @@ class LogActor(threshold: Int) extends Actor {
       errBuffer += msgs
       if (errBuffer.length >= threshold) {
           errBuffer.foreach(log => LogHelper.err(log))
+          errBuffer.clear
       }
 
     case Warn(msgs) =>
       warnBuffer += msgs
       if (warnBuffer.length >= threshold) {
         warnBuffer.foreach(log => LogHelper.warn(log))
+        warnBuffer.clear
       }
 
     case Info(msgs) =>
       infoBuffer += msgs
       if (infoBuffer.length >= threshold) {
         infoBuffer.foreach(log => LogHelper.info(log))
+        infoBuffer.clear
       }
   }
 }

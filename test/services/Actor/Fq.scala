@@ -2,7 +2,6 @@ package services.Actor
 
 import common.FileHelper.FileHelper
 import common.FqueueHelper.FqueueHelper
-import play.api.libs.json.Json
 
 /**
  * Created by horatio on 10/28/15.
@@ -10,22 +9,21 @@ import play.api.libs.json.Json
 object Fq {
 
   def main(args: Array[String]) {
-
     val fqueue = FqueueHelper.client()
     val msgs = FileHelper.readFile("/home/horatio/big-data/track_json/record.json")
+    val map = FileHelper.readFile("/home/horatio/big-data/maps/conditions.map")
 
-    val js = Json.parse("""{"1":{"1":"1"}, "2":{"2":"2"}}""")
-    val queue = "Tracks_bash"
+    val trackQ = "Tracks_bash"
+    val mapQ = "Maps_bash"
 
     var ret = true
-    for (i <- 0 to 9) {
-       ret = ret & fqueue.push(queue, msgs)
-      println(Json.parse(msgs))
+    for (i <- 0 to 20) {
+       ret = ret & fqueue.push(trackQ, msgs)
     }
-    if (ret == true) println("push to fq ")
 
-//    Thread.sleep(5000)
-//    println(fqCli.pull(queue))
+    ret = ret & fqueue.push(mapQ, map)
+
+    if (ret == true) println(s"${fqueue.pull(mapQ).get} ")
 
   }
 
