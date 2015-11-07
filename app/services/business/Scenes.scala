@@ -1,5 +1,6 @@
 package services.business
 
+import common.LogHelper.LogHelper
 import play.api.libs.json.{JsValue, Json}
 
 import scala.collection.mutable.ListBuffer
@@ -11,6 +12,36 @@ import scala.util.control.Breaks._
 object Scenes {
 
   val infos = Json.parse("""{"gender": "female", "age": 28, "area": "south", "salary": 7000}""")
+
+  def judge(record: String, conditions: Map[String, JsValue]) {
+
+    try {
+      /***** a Fqueue record converted to several user's track records *****/
+      val records = Json.parse(record).as[Map[String, JsValue]]
+      records.keys map { uid =>
+        val tracks = records.get(uid)
+        val act = "v"
+
+//        val t1Triggers = loadConditions(conditions, "T1")
+//        val tid = Scenes.firstVisit(uid, tracks, t1Triggers)
+//        println(s"$tid ---- ")
+
+        
+        //        /** extract data from json **/
+        //        /**
+        //         * viewtime means visit time
+        //         **/
+        //        val vTime = (tracks \ "viewtime").as[String]
+        //        val durs = (tracks \ "duration").as[String]
+        //        val pInfos = tracks \ "pageinfo"
+        //        println(pInfos)
+      }
+    } catch {
+      case ex: Exception =>
+        LogHelper.err(s"ESJ: judge: ${ex.getMessage()}" + "\n")
+    }
+
+  }
 
   /***** need optimizing *****/
   private def judgeUserInfos(uid: String, code: String, sid: String): String ={
@@ -82,5 +113,7 @@ object Scenes {
     }
     tid
   }
+
+
 
 }

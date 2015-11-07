@@ -73,6 +73,11 @@ object DateHelper {
         return fields(0);
     }
 
+		def getCurrentHour: String = {
+			val form = getHourOfDate2Format()
+			form.split(" ").last
+		}
+
     def getTimeOfDtae2Format(): String = {
         val currTime = System.currentTimeMillis;
         val date = formatDate2Seconds(currTime);

@@ -3,7 +3,7 @@
 //import akka.actor.{Actor, ActorLogging, ActorRef}
 //import common.FqueueHelper.FqueueHelper
 //import services.Actor.FqActor._
-//import services.Actor.JudgeActor.PullFq
+//import services.Actor.SceneActor.PullFq
 //import services.Actor.LogActor.Err
 //
 //import scala.util.{Failure, Success, Try}

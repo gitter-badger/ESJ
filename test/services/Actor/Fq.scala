@@ -11,7 +11,7 @@ object Fq {
   def main(args: Array[String]) {
     val fqueue = FqueueHelper.client()
     val msgs = FileHelper.readFile("/home/horatio/big-data/track_json/record.json")
-    val map = FileHelper.readFile("/home/horatio/big-data/maps/conditions.map")
+    val map = FileHelper.readFile("/home/horatio/big-data/maps/rules.map")
 
     val trackQ = "Tracks_bash"
     val mapQ = "Maps_bash"
