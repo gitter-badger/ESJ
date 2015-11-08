@@ -22,10 +22,10 @@ package common.DateHelper
 import java.text.SimpleDateFormat
 
 class Date(year: String, mon: String, day: String, hour: String) {
-  	def getYear = year;
-  	def getMon = mon;
-  	def getDay = day;
-  	def gethour = hour;
+	def getYear = year
+	def getMon = mon
+	def getDay = day
+	def gethour = hour
 }
 
 object DateHelper {
@@ -39,71 +39,71 @@ object DateHelper {
 	def formatDate2Day(ts: Long): String = formatDay.format(ts)
 	def formatDate2Seconds(ts: Long): String = formatSecond.format(ts)
 
-    /* format like that yyyy-MM-dd */
+	/* format like that yyyy-MM-dd */
 	def getDate2Format(): String = {
-		val currTime = System.currentTimeMillis;
-		val date = formatDate2Day(currTime);
-		return date;
+		val currTime = System.currentTimeMillis
+		val date = formatDate2Day(currTime)
+		date
 	}
 
-    def getCurrentTimeMillis(): Long = {
-        return System.currentTimeMillis;
-    }
+	def getCurrentTimeMillis(): Long = {
+		System.currentTimeMillis
+	}
 
-    def getCurrentTimeSeconds(): Long = {
-        return System.currentTimeMillis / 1000;
-    }
+	def getCurrentTimeSeconds(): Long = {
+		System.currentTimeMillis / 1000
+	}
 
-    /* remoce the '-' in date */
+	/* remoce the '-' in date */
 	def date2String(date: String): String = {
-		val fields = date.trim.split("-", 3);
-		var ret = "";
+		val fields = date.trim.split("-", 3)
+		var ret = ""
 		for (f <- fields) {
-			ret += f.trim;
+			ret += f.trim
 		}
 
-		return ret;
+		ret
 	}
 
-    def getHourOfDate2Format(): String = {
-        val currTime = System.currentTimeMillis;
-        val date = formatDate2Seconds(currTime);
+	def getHourOfDate2Format(): String = {
+		val currTime = System.currentTimeMillis
+		val date = formatDate2Seconds(currTime)
 
-        val fields = date.split(":", 2);
-        return fields(0);
-    }
+		val fields = date.split(":", 2)
+		fields(0)
+	}
 
-		def getCurrentHour: String = {
-			val form = getHourOfDate2Format()
-			form.split(" ").last
-		}
+	def getCurrentHour: String = {
+		val form = getHourOfDate2Format()
+		form.split(" ").last
+	}
 
-    def getTimeOfDtae2Format(): String = {
-        val currTime = System.currentTimeMillis;
-        val date = formatDate2Seconds(currTime);
+	def getTimeOfDtae2Format(): String = {
+		val currTime = System.currentTimeMillis
+		val date = formatDate2Seconds(currTime)
 
-        return date;
-    }
+		date
+	}
 
 	private def getNDayAgo(n: Int): Date = {
-		val currTime = System.currentTimeMillis - (n * 86400000);
-		val time = formatDate2Day(currTime);
-		val ret = time.toString.trim.split("-", 3);
-		val date = new Date(ret(0), ret(1), ret(2), Unit.toString());
-		date;
+		val currTime = System.currentTimeMillis - (n * 86400000)
+		val time = formatDate2Day(currTime)
+		val ret = time.toString.trim.split("-", 3)
+		val date = new Date(ret(0), ret(1), ret(2), Unit.toString())
+		date
 	}
 
-	def getDayAgo(n: Int) = getNDayAgo(n);
+	def getDayAgo(n: Int) = getNDayAgo(n)
 
 	def getDayAgo2String(n: Int): String = {
-		val date =  getDayAgo(n);
-		val dateStr = date.getYear + date.getMon + date.getDay;
-		return dateStr;
+		val date =  getDayAgo(n)
+		val dateStr = date.getYear + date.getMon + date.getDay
+		dateStr
 	}
 
 	def getDayAgo2Format(n: Int): String = {
-		val date =  getDayAgo(n);
-		val dataFormat = date.getYear + "-" + date.getMon + "-" + date.getDay;
-		return dataFormat;
+		val date =  getDayAgo(n)
+		val dataFormat = date.getYear + "-" + date.getMon + "-" + date.getDay
+		dataFormat
 	}
 }

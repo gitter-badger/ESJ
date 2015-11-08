@@ -1,3 +1,5 @@
+package services.Actor
+
 import akka.actor.{ActorLogging, Actor}
 
 class MQActor extends Actor with ActorLogging {

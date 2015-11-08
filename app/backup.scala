@@ -17,7 +17,7 @@
 //
 //object Init {
 //
-//  protected def loadMap: ListBuffer[Map[String, Any]] = {
+//  protected def loadRules: ListBuffer[Map[String, Any]] = {
 //    val maps = ListBuffer[Map[String, Any]]()
 //    val conditions = FileHelper.readFile("./DynConfig/maps/rules.map")
 //    maps += Json.parse(conditions).as[Map[String, JsValue]]
@@ -78,7 +78,7 @@
 //    //      }
 //
 //    case StartJudge(num) =>
-//      val maps = loadMap
+//      val maps = loadRules
 //      (0 until num).foreach(i => {
 //        judges += context.actorOf(Props(classOf[SceneActor], logActor, maps), s"SceneActor-$i")
 //        context.watch(judges.apply(i))

@@ -26,7 +26,7 @@ object Scenes {
 //        val tid = Scenes.firstVisit(uid, tracks, t1Triggers)
 //        println(s"$tid ---- ")
 
-        
+
         //        /** extract data from json **/
         //        /**
         //         * viewtime means visit time

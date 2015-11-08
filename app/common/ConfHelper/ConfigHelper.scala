@@ -3,6 +3,7 @@ package common.ConfHelper
 import common.FileHelper.FileHelper
 
 import scala.collection.mutable.{ArrayBuffer, Map}
+import scala.io.Source
 
 /**
  * Created by horatio on 10/28/15.
@@ -18,6 +19,30 @@ object ConfigHelper {
         conf_
       case Some(conf) => conf
     }
+  }
+
+  def getConf(path: String, separator: String): Map[String, String] = {
+    val conf = Map[String, String]()
+    try {
+      if (!FileHelper.fileIsExist(path)) println(s"${path} is not found")
+      else {
+        val source = Source.fromFile(path)
+        val lines = source.getLines()
+        for (line <- lines) {
+          val l = line.trim
+          if (l != "" && l.length > 1 && l.charAt(0) != '#') {
+            val fields = l.split(separator, 2)
+            if (!conf.contains(fields(0).trim)) conf += (fields(0).trim -> fields(1).trim)
+          }
+        }
+        source.close()
+      }
+    } catch {
+      case ex: Exception =>
+        println(ex.getMessage())
+    }
+
+    conf
   }
 }
 
