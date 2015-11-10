@@ -3,13 +3,15 @@ import com.typesafe.config.ConfigFactory
 import common.ConfHelper.ConfigHelper
 import common.FileHelper.FileHelper
 import common.FqueueHelper.FqueueHelper
+import services.Actor.SceneActor.PullFq
 import services.Actor._
 
+import scala.collection.parallel.ParSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-object System extends App {
+object ESJ extends App {
   import Boot._
 
   val dynConfig = ConfigHelper.getConf()
@@ -20,18 +22,19 @@ object System extends App {
   val rulesFile = dynConfig.getString("Actor.Scene.rulesFile")
   val scenesFile = dynConfig.getString("Actor.Scene.scenesFile")
   val segSize = dynConfig.getString("Actor.Log.SegmentSize").toInt
+  val sysName = dynConfig.getString("App.Name")
 
   val config = ConfigFactory.load()
-  val system = ActorSystem("EmailSceneJudge", config.getConfig("AkkaConfig"))
+  implicit val system = ActorSystem(sysName, config.getConfig("AkkaConfig"))
   val boot = system.actorOf(Props[Boot], "BootActor")
   boot ! Init
 }
 
 class Boot extends Actor with ActorLogging {
   import Boot._
-  import System._
+  import ESJ._
   import services.Actor.LogActor.{Err, Info}
-  import services.Actor.SceneActor.{PullFq, LoadMap}
+  import services.Actor.SceneActor.LoadMap
 
   val name = context.self.path.toString.split("/").last
   val logActor = context.actorOf(Props(classOf[LogActor], segSize), "LogActor")
@@ -39,26 +42,31 @@ class Boot extends Actor with ActorLogging {
 
   def receive = {
     case Init =>
-      val scene = context.actorOf(Props(classOf[SceneActor], LogActor), "SceneActor")
-      context.watch(scene)
-      val recommend = context.actorOf(Props(classOf[RecommendActor], LogActor), "RecommendActor")
-      context.watch(recommend)
-      val hBase = context.actorOf(Props(classOf[HBaseActor], LogActor), "HBaseActor")
-      context.watch(logActor)
-      val mQ = context.actorOf(Props(classOf[MQActor], LogActor), "MQActor")
-      context.watch(mQ)
+      /***** reasonable to pass ActorRef as a parameter? *****/
+      Future(ParSeq(
+        (Props[MQActor], "MQActor"), (Props[RecommendActor], "RecommendActor"),
+        (Props[HBaseActor], "HBaseActor"), (Props[SceneActor], "SceneActor")
+      )) onComplete {
+        case Success(props) =>
+          val actors = props.map(prop =>
+            context.watch(
+              context.actorOf(prop._1, prop._2))
+          ).toArray
+          val sceneActor = actors.last
+          sceneActor ! PullFq
+          self ! SyncMap(sceneActor)
 
-      scene ! PullFq
-      self ! SyncMap(scene)
+        case Failure(ex) => logActor ! Err(s"$name: Init: $ex")
+      }
 
     case SyncMap(scene) =>
       //if (DateHelper.getCurrentHour.toInt % 8 == 0) { }
-      log.info("time to sync maps")
       val fqClient = FqueueHelper.client()
       Future(fqClient.pull(queue)) onComplete {
         case Success(map) =>
           if(map != None) {
             FileHelper.save2File(rulesFile, map.get)
+            logActor ! Info(s"$name: SyncMap: success to update rule map")
             scene ! LoadMap
           } else logActor ! Info(s"$name: SyncMap: no rule map to update")
         case Failure(ex) => logActor ! Err(s"$name: SyncMap: $ex")
@@ -68,8 +76,14 @@ class Boot extends Actor with ActorLogging {
       self ! SyncMap(scene)
 
     case Shutdown =>
-      if (context.children.isEmpty) {
-        logActor ! Info(s"$name: Shutdown: all children died, ready to shutdown system")
+      val children = context.children
+      if (children.isEmpty) {
+        logActor ! Info(s"$name: Shutdown: all children already died before, ready to shutdown system")
+        self ! PoisonPill
+        context.system.shutdown()
+      } else {
+        children.par.map(child => child ! PoisonPill)
+        logActor ! Info(s"$name: Shutdown: killed all children, ready to shutdown system")
         self ! PoisonPill
         context.system.shutdown()
       }

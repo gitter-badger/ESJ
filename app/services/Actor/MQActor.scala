@@ -1,6 +1,6 @@
 package services.Actor
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging}
 
 class MQActor extends Actor with ActorLogging {
   def receive = {

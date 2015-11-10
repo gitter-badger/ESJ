@@ -1,46 +1,36 @@
 package services.business
 
+import akka.actor.ActorSelection
 import common.LogHelper.LogHelper
 import play.api.libs.json.{JsValue, Json}
 
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 import scala.util.control.Breaks._
 
 /**
  * Created by horatio on 10/29/15.
  */
 object Scenes {
-
   val infos = Json.parse("""{"gender": "female", "age": 28, "area": "south", "salary": 7000}""")
 
-  def judge(record: String, conditions: Map[String, JsValue]) {
-
+  def judge(record: String, rules: Map[String, Map[String, JsValue]], logActor: ActorSelection): String = {
+    import services.Actor.LogActor._
     try {
       /***** a Fqueue record converted to several user's track records *****/
       val records = Json.parse(record).as[Map[String, JsValue]]
-      records.keys map { uid =>
+      records.keys.par map { uid =>
         val tracks = records.get(uid)
         val act = "v"
+        logActor ! Info(s"uid: $uid")
 
-//        val t1Triggers = loadConditions(conditions, "T1")
-//        val tid = Scenes.firstVisit(uid, tracks, t1Triggers)
-//        println(s"$tid ---- ")
-
-
-        //        /** extract data from json **/
-        //        /**
-        //         * viewtime means visit time
-        //         **/
-        //        val vTime = (tracks \ "viewtime").as[String]
-        //        val durs = (tracks \ "duration").as[String]
-        //        val pInfos = tracks \ "pageinfo"
-        //        println(pInfos)
+        val parls = List.fill(1000)((1, 2))
       }
     } catch {
       case ex: Exception =>
         LogHelper.err(s"ESJ: judge: ${ex.getMessage()}" + "\n")
     }
-
+    ""
   }
 
   /***** need optimizing *****/
@@ -114,6 +104,6 @@ object Scenes {
     tid
   }
 
-
+Random.nextInt(100)
 
 }

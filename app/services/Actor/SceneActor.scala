@@ -1,12 +1,11 @@
 package services.Actor
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging}
 import common.ConfHelper.ConfigHelper
 import common.FileHelper.FileHelper
 import common.FqueueHelper.FqueueHelper
 import play.api.libs.json._
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -14,14 +13,16 @@ import scala.util.{Failure, Success, Try}
 /**
  * Created by horatio on 10/27/15.
  */
-class SceneActor(logActor: ActorRef, maps: ListBuffer[Map[String, Any]]) extends Actor with ActorLogging {
-  import services.Actor.LogActor.{Info, Err}
+class SceneActor extends Actor with ActorLogging {
+  import services.Actor.LogActor.{Err, Info}
   import services.Actor.RecommendActor.Query
   import services.Actor.SceneActor._
   import services.business.Scenes
 
-  val name = context.self.path.toString.split("/").last
-  val recommend = context.actorSelection("/user/RecommendActor")
+  val actorPath = context.self.path.toString.split("/")
+  val name = actorPath.last
+  val recommend = context.actorSelection("../LogActor")
+  val logActor = context.actorSelection("../LogActor")
 
   def receive = {
     case PullFq =>
@@ -43,22 +44,18 @@ class SceneActor(logActor: ActorRef, maps: ListBuffer[Map[String, Any]]) extends
     case LoadMap =>
       scenes = ConfigHelper.getConf(scenesFile, separator)
       rules = loadRules(rulesFile, scenes.keys)
-    //      rules = rules.empty
-    //      scenes = scenes.empty
-    //      Thread.sleep(interval)
+      logActor ! Info(s"$rules\n")
 
     case Judge(record, rules) =>
-      val rules = maps.apply(0).asInstanceOf[Map[String, JsValue]]
-
-      Try(Scenes.judge(record, rules).toString) match {
+      Try(Scenes.judge(record, rules, logActor)) match {
         case Success(sceneId) =>
           if (sceneId != "")
             recommend ! Query(sceneId, scenes.toMap)
           else self ! PullFq
-        case Failure(ex: Throwable) =>
+        case Failure(ex) =>
           logActor ! Err(s"$name: Judge: $ex")
       }
-      Thread.sleep(5000)
+      Thread.sleep(interval)
       self ! PullFq
   }
 }
@@ -74,7 +71,7 @@ object SceneActor {
     val rulesBuffer = Json.parse(FileHelper.readFile(rulesFile)).as[Map[String, JsValue]]
     val rules = muMap[String, Map[String, JsValue]]()
 
-    sceneIds map { sceneId =>
+    sceneIds.par map { sceneId =>
       val rule = muMap[String, JsValue]()
       rulesBuffer.keys map { tid =>
         tid.substring(0, 2) match {

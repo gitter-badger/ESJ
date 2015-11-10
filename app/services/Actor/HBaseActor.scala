@@ -1,6 +1,6 @@
 package services.Actor
 
-import akka.actor.{ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging}
 
 /**
  * Created by horatio on 10/27/15.
