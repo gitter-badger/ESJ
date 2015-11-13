@@ -9,5 +9,6 @@ class HBaseActor extends Actor with ActorLogging {
 
   def receive = {
     case _ =>
+
   }
 }

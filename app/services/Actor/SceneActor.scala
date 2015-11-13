@@ -28,12 +28,12 @@ class SceneActor extends Actor with ActorLogging {
     case PullFq =>
       val fqClient = FqueueHelper.client()
       Future(fqClient.pull(queue)) onComplete {
-        case Success(record) =>
-          if(record == None) {
-            logActor ! Info(s"$name: PullFq: no record to pull")
+        case Success(records) =>
+          if(records == None) {
+            logActor ! Info(s"$name: PullFq: no records to pull")
             Thread.sleep(interval)
             self ! PullFq
-          } else self ! Judge(record.get, rules)
+          } else self ! Judge(records.get, rules)
 
         case Failure(ex) =>
           logActor ! Err(s"$name: PullFq: $ex")
@@ -42,12 +42,22 @@ class SceneActor extends Actor with ActorLogging {
       }
 
     case LoadMap =>
+
+      /**
+       * rules: Map[SceneId, Trigger] = Map[SceneId, Map[Variable, Value]]
+       * scenes: Map[SceneId, Priority]
+       */
+
       scenes = ConfigHelper.getConf(scenesFile, separator)
       rules = loadRules(rulesFile, scenes.keys)
       logActor ! Info(s"$rules\n")
 
-    case Judge(record, rules) =>
-      Try(Scenes.judge(record, rules, logActor)) match {
+    case Judge(records, rules) =>
+
+      /**
+       * Scenes.juage return a composite Map: Map[Uid, Map[SceneId, SendTime]]
+       */
+      Try(Scenes.judge(records, rules, logActor)) match {
         case Success(sceneId) =>
           if (sceneId != "")
             recommend ! Query(sceneId, scenes.toMap)
@@ -63,7 +73,7 @@ class SceneActor extends Actor with ActorLogging {
 object SceneActor {
   object PullFq
   object LoadMap
-  case class Judge(record: String, rules: Map[String, Map[String, JsValue]])
+  case class Judge(records: String, rules: Map[String, Map[String, JsValue]])
   object Pause
 
   def loadRules(rulesFile: String, sceneIds: Iterable[String]): Map[String, Map[String, JsValue]] = {

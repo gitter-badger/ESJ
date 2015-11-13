@@ -5,7 +5,40 @@ import play.api.libs.json.JsValue
 /**
  * Created by horatio on 10/30/15.
  */
-object UserInfos {
+object Identity {
+  val trueBit = '0'
+
+  /***** need optimizing *****/
+  def judgeFeature(feature: Map[String, String], code: String, variables: JsValue): Boolean = {
+    val length = code.length
+
+    var bit = code.charAt(0)
+    val terms = Array("Age", "Area", "Gender", "Salary")
+    val indexs = Map[String, Int]()
+    terms.par.foreach { term =>
+      val index = indexs.get(term).get
+      if (!judge(code.charAt(index), term, feature, variables)) return false
+    }
+
+    true
+  }
+
+
+  private def judge(bit: Char, term: String, feature: Map[String, String], variables: JsValue): Boolean = {
+    /**
+     * Theoretically, if bit != trueBit, value must exist!
+     * Just preventing unseen accidents
+     */
+    if (bit != trueBit)
+      feature.get(term) match {
+        case Some(value) =>
+          if (value != (variables \ term).as[String]) return false
+        case None =>
+          println("")
+      }
+    true
+  }
+
 
   def judgeGender(infos: JsValue, opt: String): String = {
 

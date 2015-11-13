@@ -2,6 +2,7 @@ package services.Actor
 
 import common.FileHelper.FileHelper
 import common.FqueueHelper.FqueueHelper
+import play.api.libs.json.Json
 
 /**
  * Created by horatio on 10/28/15.
@@ -29,6 +30,8 @@ object Fq {
 //      println(msgs)
 //    }
 
+    val m = Json.parse("""{"1":2, "3":4, "5":6}""").as[Map[String, Int]].par
+    println(m)
     println(LogActor.toString)
   }
 
