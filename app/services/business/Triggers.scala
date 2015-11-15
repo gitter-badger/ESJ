@@ -5,31 +5,86 @@ import play.api.libs.json.JsValue
 /**
  * Created by horatio on 10/30/15.
  */
-object Identity {
-  val trueBit = '0'
+object Triggers {
+  val passBit = '0'
+  val terms = Array("Age", "Area", "Gender", "Salary")
+  val meanings = Map[String, String]()
+  val indexes = Map[String, Int]()
+  val separator = "-"
 
-  /***** need optimizing *****/
-  def judgeFeature(feature: Map[String, String], code: String, variables: JsValue): Boolean = {
-    val length = code.length
+  def judgeVariables(code: String, variables: Map[String, String], features: Map[String, String]): Boolean = {
 
-    var bit = code.charAt(0)
-    val terms = Array("Age", "Area", "Gender", "Salary")
-    val indexs = Map[String, Int]()
-    terms.par.foreach { term =>
-      val index = indexs.get(term).get
-      if (!judge(code.charAt(index), term, feature, variables)) return false
+    variables.keys.par foreach { variable =>
+      indexes.get(variable) match {
+        case Some(index) =>
+          if (code.charAt(index) != passBit) {
+            /**
+             * Theoretically, if "bit != passBit", value must exist!
+             * Just preventing unseen accidents
+             */
+            val value = variables.get(variable).get
+            features.get(variable) match {
+              case Some(feature) =>
+                if (!judge(value, feature, variable)) return false
+
+              case None =>
+              /**
+               * TYPICALLY, assume those without specific "feature" value pass!!!
+               */
+            }
+          }
+
+        case None =>
+        /**
+         * TYPICALLY, assume variable without "index" in indexes map make all pass!!!
+         * Indexs syncanization delay may lead to it when businesses add a variable and its code.
+         */
+      }
+
+    }
+    true
+  }
+
+  private def judge(variable: String, value: String, feature: String): Boolean ={
+
+    meanings.get(variable) match {
+      case Some(meaning) => meaning match {
+        case "Range" =>
+          val range = value.split(separator, 2)
+          /**
+           * range sholud be 2 in length, thus invalid value of variable
+           * if "feature" not in range, return false
+           */
+          if (range.length == 2) {
+            val min = range.apply(0)
+            val max = range.apply(1)
+            if (feature > max || feature <= min) return false
+          }
+        case "Value" => if (feature != value) return false
+      }
+
+      case None =>
+      /**
+       * TYPICALLY, assume "variable" without specific type pass!!!
+       * Indexs syncanization delay may lead to it when businesses add a variable and its code.
+       */
     }
 
     true
   }
 
+}
 
+class Triggers {
+
+  val passBit = '0'
+  val terms = Array("Age", "Area", "Gender", "Salary")
   private def judge(bit: Char, term: String, feature: Map[String, String], variables: JsValue): Boolean = {
     /**
      * Theoretically, if bit != trueBit, value must exist!
      * Just preventing unseen accidents
      */
-    if (bit != trueBit)
+    if (bit != passBit)
       feature.get(term) match {
         case Some(value) =>
           if (value != (variables \ term).as[String]) return false
@@ -39,6 +94,18 @@ object Identity {
     true
   }
 
+
+  /***** need optimizing *****/
+  def judgeVariables(features: Map[String, String], code: String, variables: JsValue): Boolean = {
+
+    val indexs = Map[String, Int]()
+    terms.par.foreach { feature =>
+      val index = indexs.get(feature).get
+      if (!judge(code.charAt(index), feature, features, variables)) return false
+    }
+
+    true
+  }
 
   def judgeGender(infos: JsValue, opt: String): String = {
 
@@ -137,5 +204,4 @@ object Identity {
       }
     } else opt
   }
-
 }

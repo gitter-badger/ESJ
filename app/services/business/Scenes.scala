@@ -4,19 +4,15 @@ import akka.actor.ActorSelection
 import common.HBaseHelper.HBaseHelper
 import common.HBaseHelper.Row
 import common.LogHelper.LogHelper
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 
 /**
  * Created by horatio on 10/29/15.
  */
 object Scenes {
-  val infos = Json.parse("""{"gender": "female", "age": 28, "area": "south", "salary": 7000}""")
 
   def judge(record: String, rules: Map[String, Map[String, JsValue]], logActor: ActorSelection): String = {
     try {
-      val T1Rule = rules.get("T1").get
-      val T2Rule = rules.get("T2").get
-      val I1Rule = rules.get("I1").get
 
       /**
        * A Fqueue record converted to a ParMap of several user's track records:
@@ -27,16 +23,16 @@ object Scenes {
       val uids = records.keys
       val table = ""
       val recordRows = HBaseHelper.getRows(table, uids)
-      val IdentityRows = HBaseHelper.getRows(table, uids)
-      val act = "v"
+      val identityRows = HBaseHelper.getRows(table, uids)
 
       uids map { uid =>
         val track = records.get(uid).get
-        val identity = IdentityRows.get(uid)
+        val identity = identityRows.get(uid)
         recordRows.get(uid) match {
           case Some(recordRow) =>
 //            visitInvitation(uid, track, rules.get("T2"))
           case None =>
+            /** T1 SceneId for firstVisit **/
             firstVisit(track, identity, rules.get("T1"))
         }
       }
@@ -52,27 +48,31 @@ object Scenes {
     var tid = "T1-"
 
     rule match {
-      case Some(trigger) =>
-
+      case Some(triggers) =>
         /**
          * ParIterable
          */
-        trigger.keys.par foreach { code =>
-          val variables = trigger.get(code).get
-          val duration = (track \ "duration").as[Int]
-          val Durations = (variables \ "Durations").as[Int]
+        triggers.keys.par foreach { code =>
+          val variables = triggers.get(code).get
+          val durs = (track \ "duration").as[String].toInt
+          val durations = (variables \ "Durations").as[Int]
 
-          if (duration >= Durations) {
+          if (durs < durations) {
             identity match {
               case Some(row) =>
-                val feature = row.qualifersAndValues
-                if (Identity.judgeFeature(feature, code, variables)) tid +=code
-              case None => tid += code
+                val features = row.qualifersAndValues
+                val featureVariables = (variables.as[JsObject] - "Durations" - "SendTime").as[Map[String, String]]
+                if (Triggers.judgeVariables(code, featureVariables, features)) tid +=code
+              case None =>
+                /**
+                 * TYPICALLY, assume those without identity information pass and always match the first code!!!
+                  */
+                tid = tid + code
             }
-
-          }
+          } else return tid
         }
-      case None =>
+
+      case None => tid = ""
     }
 
     tid
