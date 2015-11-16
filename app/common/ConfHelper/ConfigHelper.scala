@@ -2,7 +2,8 @@ package common.ConfHelper
 
 import common.FileHelper.FileHelper
 
-import scala.collection.mutable.{ArrayBuffer, Map}
+import scala.collection.mutable.ArrayBuffer
+
 import scala.io.Source
 
 /**
@@ -21,8 +22,9 @@ object ConfigHelper {
     }
   }
 
-  def getConf(path: String, separator: String): Map[String, String] = {
-    val conf = Map[String, String]()
+  def getMap(path: String, separator: String): Map[String, String] = {
+    import scala.collection.mutable.{Map => muMap}
+    val conf = muMap[String, String]()
     try {
       if (!FileHelper.fileIsExist(path)) println(s"${path} is not found")
       else {
@@ -31,18 +33,18 @@ object ConfigHelper {
         for (line <- lines) {
           val l = line.trim
           if (l != "" && l.length > 1 && l.charAt(0) != '#') {
-            val fields = l.split(separator, 2)
-            if (!conf.contains(fields(0).trim)) conf += (fields(0).trim -> fields(1).trim)
+            val fields = l.split(separator)
+        if (!conf.contains(fields(0).trim)) conf += (fields(0).trim -> fields(1).trim)
           }
         }
         source.close()
       }
     } catch {
       case ex: Exception =>
-        println(ex.getMessage())
+        println(s"ConfigHelper: getMap: ${ex.getMessage()}")
     }
 
-    conf
+    conf.toMap
   }
 }
 
@@ -59,7 +61,8 @@ object DynConfigFactory {
 
 
 class DynConfig(kvs: ArrayBuffer[String]) {
-  val conf = Map[String, String]()
+  import scala.collection.mutable.{Map => muMap}
+  val conf = muMap[String, String]()
   initConfing(kvs)
 
   def getString(key: String): String = {

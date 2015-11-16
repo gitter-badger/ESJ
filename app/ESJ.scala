@@ -12,15 +12,13 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 object ESJ extends App {
-  import Boot._
+  import Boot.Init
 
   val dynConfig = ConfigHelper.getConf()
   val queue = dynConfig.getString("Actor.Boot.Fqueue")
-
-  /***** interval to sync maps *****/
-  val syncInterval = dynConfig.getString("Actor.Boot.syncInterval").toInt
-  val rulesFile = dynConfig.getString("Actor.Scene.rulesFile")
-  val scenesFile = dynConfig.getString("Actor.Scene.scenesFile")
+  val syncInterval = dynConfig.getString("Actor.Boot.SyncInterval").toInt
+  val rulesFile = dynConfig.getString("Actor.Scene.Rules")
+  val sceneIds = dynConfig.getString("Actor.Scene.Identities")
   val segSize = dynConfig.getString("Actor.Log.SegmentSize").toInt
   val sysName = dynConfig.getString("App.Name")
 

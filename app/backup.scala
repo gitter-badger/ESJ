@@ -31,7 +31,7 @@
 //  val config = ConfigFactory.load()
 //  implicit val system = ActorSystem("ESJ-Actors", config.getConfig("AkkaConfig"))
 //
-//  val dynConfig = ConfigHelper.getConf()
+//  val dynConfig = ConfigHelper.getMap()
 //  val number = dynConfig.getString("Actor.ESJ.Number").toInt
 //  val threshold = dynConfig.getString("Actor.Log.Threshold").toInt
 //  val interval = dynConfig.getString("Actor.Fq.Interval").toInt

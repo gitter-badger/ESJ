@@ -1,4 +1,4 @@
 {
-    "T1-2200": {"Durations": 120, "Send": "1541199999", "Gender": "male", "Age": "16-25"},
-    "T1-2400": {"Durations": 200, "Send": "1541199999", "Gender": "male", "Age": "36-45"}
+    "T1-2020": {"Durations": "120", "Send": "1541199999", "Gender": "male", "Age": "15-25"},
+    "T1-4020": {"Durations": "200", "Send": "1541199999", "Gender": "male", "Age": "35-45"}
 }

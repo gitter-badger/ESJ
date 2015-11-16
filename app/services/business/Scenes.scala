@@ -1,121 +1,108 @@
 package services.business
 
-import akka.actor.ActorSelection
-import common.HBaseHelper.HBaseHelper
-import common.HBaseHelper.Row
+import common.ConfHelper.ConfigHelper
+import common.HBaseHelper.{HBaseHelper, Row}
 import common.LogHelper.LogHelper
 import play.api.libs.json.{JsObject, JsValue, Json}
+
+import scala.collection.mutable.{Map => muMap}
+import scala.concurrent.Future
 
 /**
  * Created by horatio on 10/29/15.
  */
 object Scenes {
 
-  def judge(record: String, rules: Map[String, Map[String, JsValue]], logActor: ActorSelection): String = {
-    try {
+  val dynConfig = ConfigHelper.getConf()
+  val recordTable = dynConfig.getString("HBase.Table.Record")
+  val identityTable = ""
 
+  def judge(record: String, rules: Map[String, Map[String, JsValue]],
+            sceneIds: Map[String, String]): Map[String, Map[String, String]] = {
+
+    val matches = muMap[String, Map[String, String]]()
+    try {
       /**
        * A Fqueue record converted to a ParMap of several user's track records:
-       * Map[Uid, Track] = Map[ Uid, Map[PageInfos, Durations, VisitTime] ] =
+       * Map[Uid, Track] = Map[Uid, Map[PageInfos, Durations, VisitTime]] =
        * Map[ Uid, Map[Map[Tags, duration], Durations, VisitTime] ]
        */
       val records = Json.parse(record).as[Map[String, JsValue]].par
       val uids = records.keys
-      val table = ""
-      val recordRows = HBaseHelper.getRows(table, uids)
-      val identityRows = HBaseHelper.getRows(table, uids)
+
+      val recordRows = HBaseHelper.getRows(recordTable, uids)
+      val identityRows = HBaseHelper.getRows(identityTable, uids)
+      val fu = Future{HBaseHelper.getRows(recordTable, uids)}
+
 
       uids map { uid =>
         val track = records.get(uid).get
         val identity = identityRows.get(uid)
         recordRows.get(uid) match {
           case Some(recordRow) =>
-//            visitInvitation(uid, track, rules.get("T2"))
+          //            visitInvitation(uid, track, rules.get("T2"))
+
           case None =>
             /** T1 SceneId for firstVisit **/
-            firstVisit(track, identity, rules.get("T1"))
+            val matched = firstVisit(sceneIds.get("FirstVisit"), rules, track, identity)
+            matches ++= Map(uid -> matched)
         }
       }
     } catch {
       case ex: Exception =>
         LogHelper.err(s"ESJ: judge: ${ex.getMessage()}" + "\n")
     }
-    ""
+
+    matches.toMap
   }
 
 
-  def firstVisit(track: JsValue, identity: Option[Row], rule: Option[Map[String, JsValue]]): String = {
-    var tid = "T1-"
+  val noMatch = Map[String, String]()
 
-    rule match {
-      case Some(triggers) =>
-        /**
-         * ParIterable
-         */
-        triggers.keys.par foreach { code =>
-          val variables = triggers.get(code).get
-          val durs = (track \ "duration").as[String].toInt
-          val durations = (variables \ "Durations").as[Int]
 
-          if (durs < durations) {
-            identity match {
-              case Some(row) =>
-                val features = row.qualifersAndValues
-                val featureVariables = (variables.as[JsObject] - "Durations" - "SendTime").as[Map[String, String]]
-                if (Triggers.judgeVariables(code, featureVariables, features)) tid +=code
-              case None =>
-                /**
-                 * TYPICALLY, assume those without identity information pass and always match the first code!!!
-                  */
-                tid = tid + code
+  private def firstVisit(sceneId: Option[String], rules: Map[String, Map[String, JsValue]],
+                 track: JsValue, identity: Option[Row]): Map[String, String] = {
+    sceneId match {
+      case Some (sceneId) =>
+        rules.get(sceneId) match {
+          case Some(triggers) =>
+            /**
+             * ParIterable
+             */
+            triggers.keys foreach { code =>
+              val variables = triggers.get(code).get
+              val durs = (track \ "duration").as[String].toInt
+              val durations = (variables \ "Durations").as[String].toInt
+
+              if (durs < durations) {
+                val templateId = sceneId + "-" + code
+                val sendTime = (variables \ "SendTime").as[String]
+                identity match {
+                  case Some(row) =>
+                    val features = row.qualifersAndValues
+                    val featureVariables = (variables.as[JsObject] - "Durations" - "SendTime").as[Map[String, String]]
+                    if (Triggers.judgeVariables(code, featureVariables, features)) {
+                      return Map("TemplateId" -> templateId, "SendTime" -> sendTime)
+                    }
+                  case None =>
+                    /**
+                     * TYPICALLY, assume those without identity information pass and always match the first code!!!
+                     */
+                    return Map("TemplateId" -> templateId, "SendTime" -> sendTime)
+                }
+              }
             }
-          } else return tid
+
+          case None =>
         }
-
-      case None => tid = ""
+      case None =>
     }
-
-    tid
+    noMatch
   }
 
 
   def visitInvitation {
 
   }
-
-  //  private def judgeUserInfos(uid: String, code: String, sid: String): String ={
-  //    var tid = sid
-  //    val codes = ListBuffer[String]()
-  //    code map {option => codes += option.toString}
-
-  //    breakable {
-  //      val gender = UserInfos.judgeGender(infos, codes.apply(0))
-  //      if (gender != codes.apply(0)) {
-  //        tid = sid
-  //        break
-  //      } else tid += gender
-  //
-  //      val age = UserInfos.judgeAge(infos, codes.apply(1))
-  //      if (age != codes.apply(1)) {
-  //        tid = sid
-  //        break
-  //      } else tid += age
-  //
-  //      val area = UserInfos.judgeArea(infos, codes.apply(2))
-  //      if (area != codes.apply(2)) {
-  //        tid = sid
-  //        break
-  //      } else tid += area
-  //
-  //      val salary = UserInfos.judgeSalary(infos, codes.apply(3))
-  //      if (salary != codes.apply(3)) {
-  //        tid = sid
-  //        break
-  //      } else tid += salary
-  //    }
-  //
-  //    tid
-  //  }
-
 
 }

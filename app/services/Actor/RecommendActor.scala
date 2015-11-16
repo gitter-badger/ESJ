@@ -9,6 +9,6 @@ class RecommendActor extends Actor with ActorLogging {
 }
 
 object RecommendActor {
-  case class Query(sceneId: String, scenes: Map[String, String])
+  case class Query(matches: Map[String, Map[String, String]], priority: Map[String, String])
 
 }

@@ -49,7 +49,10 @@ object Triggers {
 
     meanings.get(variable) match {
       case Some(meaning) => meaning match {
-        case "Range" =>
+        /**
+         * "R" stands for "Range" and "V" for "Value"
+         */
+        case "R" =>
           val range = value.split(separator, 2)
           /**
            * range sholud be 2 in length, thus invalid value of variable
@@ -60,7 +63,7 @@ object Triggers {
             val max = range.apply(1)
             if (feature > max || feature <= min) return false
           }
-        case "Value" => if (feature != value) return false
+        case "V" => if (feature != value) return false
       }
 
       case None =>
@@ -79,6 +82,42 @@ class Triggers {
 
   val passBit = '0'
   val terms = Array("Age", "Area", "Gender", "Salary")
+
+  //  private def judgeUserInfos(uid: String, code: String, sid: String): String ={
+  //    var tid = sid
+  //    val codes = ListBuffer[String]()
+  //    code map {option => codes += option.toString}
+
+  //    breakable {
+  //      val gender = UserInfos.judgeGender(infos, codes.apply(0))
+  //      if (gender != codes.apply(0)) {
+  //        tid = sid
+  //        break
+  //      } else tid += gender
+  //
+  //      val age = UserInfos.judgeAge(infos, codes.apply(1))
+  //      if (age != codes.apply(1)) {
+  //        tid = sid
+  //        break
+  //      } else tid += age
+  //
+  //      val area = UserInfos.judgeArea(infos, codes.apply(2))
+  //      if (area != codes.apply(2)) {
+  //        tid = sid
+  //        break
+  //      } else tid += area
+  //
+  //      val salary = UserInfos.judgeSalary(infos, codes.apply(3))
+  //      if (salary != codes.apply(3)) {
+  //        tid = sid
+  //        break
+  //      } else tid += salary
+  //    }
+  //
+  //    tid
+  //  }
+
+
   private def judge(bit: Char, term: String, feature: Map[String, String], variables: JsValue): Boolean = {
     /**
      * Theoretically, if bit != trueBit, value must exist!

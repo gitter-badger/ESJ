@@ -1,0 +1,32 @@
+# "R" stands for "Range" and "V" for "Value"
+
+# Look through "./values.map",
+# and learn about valid values of variables as followed:
+# Age 年龄
+# Area    地域
+# Belief  信仰
+# Birthday    生日
+# City    城市
+# Color   喜欢的颜色
+# Education   教育程度
+# Gender  性别
+# Height  身高
+# Job 职业
+# Race    民族
+# Salary  工资
+# Weight  体重
+
+
+Age=R
+Area=V
+Belief=V
+Birthday=V
+City=V
+Color=V
+Education=V
+Gender=V
+Height=R
+Job=V
+Race=V
+Salary=R
+Weight=R
