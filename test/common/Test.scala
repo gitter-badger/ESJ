@@ -1,6 +1,6 @@
 package common
 
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
 
@@ -16,7 +16,7 @@ object Test {
         println(action.toString)
       case Failure(ex) =>
         println(s"$ex")
-        track.as[JsObject] ++= Json.obj(("action", "v"))
+        //track.as[JsObject] ++= Json.obj(("action", "v"))
     }
 
     println(track)

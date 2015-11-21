@@ -29,7 +29,7 @@ object Scenes {
        * Map[ Uid, Map[Map[Tags, duration], Durations, VisitTime] ]
        */
       val records = Json.parse(record).as[Map[String, JsValue]].par
-      val uids = records.keys
+      val uids = records.keys.seq
       val recordRows = HBaseHelper.getRows(recordTable, uids)
       val identityRows = HBaseHelper.getRows(identityTable, uids)
 
