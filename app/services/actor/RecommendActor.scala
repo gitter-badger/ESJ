@@ -1,4 +1,4 @@
-package services.Actor
+package services.actor
 
 import akka.actor.{Actor, ActorLogging}
 

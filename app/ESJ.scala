@@ -3,8 +3,8 @@ import com.typesafe.config.ConfigFactory
 import common.ConfHelper.ConfigHelper
 import common.FileHelper.FileHelper
 import common.FqueueHelper.FqueueHelper
-import services.Actor.SceneActor.PullFq
-import services.Actor._
+import services.actor.SceneActor.PullFq
+import services.actor._
 
 import scala.collection.parallel.ParSeq
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,8 +31,8 @@ object ESJ extends App {
 class Boot extends Actor with ActorLogging {
   import Boot._
   import ESJ._
-  import services.Actor.LogActor.{Err, Info}
-  import services.Actor.SceneActor.LoadMap
+  import services.actor.LogActor.{Err, Info}
+  import services.actor.SceneActor.LoadMap
 
   val name = context.self.path.toString.split("/").last
   val logActor = context.actorOf(Props(classOf[LogActor], segSize), "LogActor")
@@ -62,7 +62,7 @@ class Boot extends Actor with ActorLogging {
       val fqClient = FqueueHelper.client()
       Future(fqClient.pull(queue)) onComplete {
         case Success(map) =>
-          if(map != None) {
+          if (map.nonEmpty) {
             FileHelper.save2File(rulesFile, map.get)
             logActor ! Info(s"$name: SyncMap: success to update rule map")
             scene ! LoadMap
@@ -80,7 +80,7 @@ class Boot extends Actor with ActorLogging {
         self ! PoisonPill
         context.system.shutdown()
       } else {
-        children.par.map(child => child ! PoisonPill)
+        children.par.foreach(child => child ! PoisonPill)
         logActor ! Info(s"$name: Shutdown: killed all children, ready to shutdown system")
         self ! PoisonPill
         context.system.shutdown()

@@ -1,5 +1,9 @@
+# Necessary: Durations, SendTime
 FirstVisit=T1
+
+# Necessary: VisitInterval, SendTime
 VisitInvitation=T2
+
 NewProduct=T3
 CollectionNotice=T4
 Birthday=T5
@@ -9,5 +13,8 @@ Sunscreen=I2
 FaceMask=I3
 Membership=I4
 About=I5
-WebTracks=W1
-EmailTracks=E1
+
+# Necessary:
+WebTrack=W1
+EmailTrack=E1
+

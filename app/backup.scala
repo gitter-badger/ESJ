@@ -8,9 +8,9 @@
 //import common.FileHelper.FileHelper
 //import common.FqueueHelper.FqueueHelper
 //import play.api.libs.json.{JsValue, Json}
-//import services.Actor.SceneActor.{Pause, PullFq}
-//import services.Actor.LogActor.Err
-//import services.Actor.{SceneActor, LogActor}
+//import services.actor.SceneActor.{Pause, PullFq}
+//import services.actor.LogActor.Err
+//import services.actor.{SceneActor, LogActor}
 //
 //import scala.collection.mutable.ListBuffer
 //import scala.util.{Failure, Success, Try}
@@ -32,9 +32,9 @@
 //  implicit val system = ActorSystem("ESJ-Actors", config.getConfig("AkkaConfig"))
 //
 //  val dynConfig = ConfigHelper.getMap()
-//  val number = dynConfig.getString("Actor.ESJ.Number").toInt
-//  val threshold = dynConfig.getString("Actor.Log.Threshold").toInt
-//  val interval = dynConfig.getString("Actor.Fq.Interval").toInt
+//  val number = dynConfig.getString("actor.ESJ.Number").toInt
+//  val threshold = dynConfig.getString("actor.Log.Threshold").toInt
+//  val interval = dynConfig.getString("actor.Fq.Interval").toInt
 //  val syncDelay = 10000
 //  /***** vars for attempt *****/
 //  val queue = "Tracks_bash"
@@ -57,10 +57,10 @@
 //  }
 //}
 //
-//class Init(logActor: ActorRef) extends Actor with ActorLogging {
+//class Init(logActor: ActorRef) extends actor with ActorLogging {
 //
 //  import Init._
-//  import services.Actor.LogActor.Info
+//  import services.actor.LogActor.Info
 //
 //  context.watch(logActor)
 //  val name = self.path.toString

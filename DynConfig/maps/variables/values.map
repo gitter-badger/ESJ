@@ -2,6 +2,7 @@
 # For example, "0-15" equals to (0, 15] or "> 0 and <=15"
 # "unset" and "0" code bit tell ESJ pass without judging.
 
+
 # Age
 unset=0
 0-15=1

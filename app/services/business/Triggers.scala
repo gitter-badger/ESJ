@@ -1,6 +1,7 @@
 package services.business
 
-import play.api.libs.json.JsValue
+import common.HBaseHelper.Row
+import play.api.libs.json.{JsObject, JsValue}
 
 /**
  * Created by horatio on 10/30/15.
@@ -12,36 +13,47 @@ object Triggers {
   val indexes = Map[String, Int]()
   val separator = "-"
 
-  def judgeVariables(code: String, variables: Map[String, String], features: Map[String, String]): Boolean = {
+  def judgeVariables(identity: Option[Row], variables: JsValue, code: String): Boolean = {
 
-    variables.keys.par foreach { variable =>
-      indexes.get(variable) match {
-        case Some(index) =>
-          if (code.charAt(index) != passBit) {
+    identity match {
+      case Some(row) =>
+        val features = row.qualifersAndValues
+        val featureVariables = (variables.as[JsObject] - "Durations" - "SendTime").as[Map[String, String]]
+
+        featureVariables.keys.par foreach { variable =>
+          indexes.get(variable) match {
+            case Some(index) =>
+              if (code.charAt(index) != passBit) {
+                /**
+                 * Theoretically, if "bit != passBit", value must exist!
+                 * Just preventing unseen accidents
+                 */
+                val value = featureVariables.get(variable).get
+                features.get(variable) match {
+                  case Some(feature) =>
+                    if (!judge(value, feature, variable)) return false
+
+                  case None =>
+                  /**
+                   * TYPICALLY, assume those without specific "feature" value pass!!!
+                   */
+                }
+              }
+
+            case None =>
             /**
-             * Theoretically, if "bit != passBit", value must exist!
-             * Just preventing unseen accidents
+             * TYPICALLY, assume variable without "index" in indexes map make all pass!!!
+             * Indexs syncanization delay may lead to it when businesses add a variable and its code.
              */
-            val value = variables.get(variable).get
-            features.get(variable) match {
-              case Some(feature) =>
-                if (!judge(value, feature, variable)) return false
-
-              case None =>
-              /**
-               * TYPICALLY, assume those without specific "feature" value pass!!!
-               */
-            }
           }
+        }
 
-        case None =>
+      case None =>
         /**
-         * TYPICALLY, assume variable without "index" in indexes map make all pass!!!
-         * Indexs syncanization delay may lead to it when businesses add a variable and its code.
+         * TYPICALLY, assume those without identity information pass and always match the first code!!!
          */
-      }
-
     }
+
     true
   }
 

@@ -1,8 +1,8 @@
-package services.Actor
+package services.actor
 
 import akka.actor.{ActorLogging, Actor}
 import common.LogHelper.LogHelper
-import services.Actor.LogActor.{Info, Err, Warn}
+import services.actor.LogActor.{Info, Err, Warn}
 
 import scala.collection.mutable.ListBuffer
 
