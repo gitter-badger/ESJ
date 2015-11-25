@@ -90,6 +90,9 @@ object Triggers {
 
 }
 
+
+
+
 class Triggers {
 
   val passBit = '0'

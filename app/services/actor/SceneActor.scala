@@ -62,7 +62,7 @@ class SceneActor extends Actor with ActorLogging {
         case Success(matches) =>
           if (matches != noMatches) {
             logActor ! Info(s"$name: Judge: $matches")
-            recommend ! Query(matches, priority)
+            recommend ! Query(matches, priorities)
           }
         case Failure(ex) =>
           logActor ! Err(s"$name: Judge: $ex")
@@ -112,7 +112,7 @@ object SceneActor {
   val sceneIdsFile = dynConfig.getString("Actor.Scene.Identities")
   val separator = dynConfig.getString("Actor.Scene.Separator")
 
-  var priority = ConfigHelper.getMap(priorityFile, separator)
+  var priorities = ConfigHelper.getMap(priorityFile, separator)
   var sceneIds = ConfigHelper.getMap(sceneIdsFile, separator)
   var rules = loadRules(rulesFile, sceneIds.values)
 }
