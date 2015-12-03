@@ -7,7 +7,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
   "com.googlecode.xmemcached" % "xmemcached" % "2.0.0",
-  "org.hbase" % "asynchbase" % "1.7.0"
+  "org.hbase" % "asynchbase" % "1.7.0",
+  "org.fusesource.stomp" % "scomp" % "1.0.0"
 //  "org.apache.hadoop" % "hadoop-core" % "0.20.205.0",
 //  "org.apache.hbase" % "hbase" % "0.90.4"
 //  jdbc,

@@ -35,7 +35,7 @@ object HBaseHelper {
 
     try {
       val putRequest = new PutRequest(table, key, family, qualifer, value)
-      val put = client.atomicCreate(putRequest).join
+      val put = client.put(putRequest).join
 
       true
     } catch {
@@ -103,6 +103,79 @@ object HBaseHelper {
     }
   }
 
+  def getRow(table: String, keys: Iterable[String]): Map[String, Row] = {
+    import scala.collection.mutable.{Map => muMap}
+    if (ensureTable(table) == false) {
+      println("table no exist")
+      null
+    }
+
+    try {
+      val rows = muMap[String, Row]()
+      val scanner = client.newScanner(table)
+      scanner.setFilter(getFilterList(keys))
+      val mkvs = scanner.nextRows().join
+      val family = new String(mkvs.get(0).get(0).family)
+
+      if (mkvs != null) {
+        for (i <- 0 to (mkvs.size - 1)) {
+          val kvs = mkvs.get(i)
+          val key = new String(kvs.get(0).key)
+          val qualifersAndValues = muMap[String, String]()
+          for (j <- 0 to (kvs.size - 1)) {
+            qualifersAndValues += (new String(kvs.get(j).qualifier) -> new String(kvs.get(j).value))
+          }
+          val qav = qualifersAndValues.toMap
+          val row = new Row(key, family, qav)
+          rows += (key -> row)
+        }
+      }
+
+      rows.toMap
+    } catch {
+      case ex: Exception => println(s"err: ${ex.getMessage}")
+        null
+    }
+  }
+
+  def getAllVersionsOfRows(table: String, keys: Iterable[String]): ParMap[String, Row] = {
+    import scala.collection.mutable.{Map => muMap}
+    if (ensureTable(table) == false) {
+      println("table no exist")
+      val map = ParMap[String, Row]()
+      return map
+    }
+
+    try {
+      val rows = muMap[String, Row]()
+      val scanner = client.newScanner(table)
+      scanner.setMaxVersions(Integer.MAX_VALUE)
+      scanner.setFilter(getFilterList(keys))
+      val mkvs = scanner.nextRows().join
+      val family = new String(mkvs.get(0).get(0).family)
+
+      if (mkvs != null) {
+        for (i <- 0 to (mkvs.size - 1)) {
+          val kvs = mkvs.get(i)
+          val key = new String(kvs.get(0).key)
+          val qualifersAndValues = muMap[String, String]()
+          for (j <- 0 to (kvs.size - 1)) {
+            qualifersAndValues += (new String(kvs.get(j).qualifier) -> new String(kvs.get(j).value))
+          }
+          val qav = qualifersAndValues.toMap
+          val row = new Row(key, family, qav)
+          rows += (key -> row)
+        }
+      }
+
+      rows.toMap.par
+    } catch {
+      case ex: Exception => println(s"err: ${ex.getMessage}")
+        val map = Map[String, Row]()
+        map.par
+    }
+  }
+
   private def getFilterList(keys: Iterable[String]): FilterList = {
     import java.util.ArrayList
     try {
@@ -118,43 +191,6 @@ object HBaseHelper {
       case ex: Exception => null
     }
   }
-
-  //    def getRows(table: String, keys: Iterable[String]): Map[String, Row] = {
-  //    import scala.collection.mutable.{Map => muMap}
-  //    if (ensureTable(table) == false){
-  //      println("table no exist")
-  //      val map = Map[String, Row]()
-  //      return map
-  //    }
-  //
-  //    try {
-  //      val rows = muMap[String, Row]()
-  //      keys.foreach(e => {
-  //        val scanner = client.newScanner(table)
-  //        val scanFilter = new RowFilter(CompareFilter.CompareOp.EQUAL, new SubstringComparator(e))
-  //        scanner.setFilter(scanFilter)
-  //        val mkvs = scanner.nextRows().join
-  //        if (mkvs != null) {
-  //        val family = new String(mkvs.get(0).get(0).family)
-  //        val qualifersAndValues = muMap[String, String]()
-  //        val kvs = mkvs.get(0)
-  //        val key = new String(kvs.get(0).key)
-  //        for(i <- 0 to (kvs.size - 1)) {
-  //          qualifersAndValues += (new String(kvs.get(i).qualifier) -> new String(kvs.get(i).value))
-  //        }
-  //        val qav = qualifersAndValues.toMap
-  //        val row = new Row(key, family, qav)
-  //        rows += (key -> row)
-  //        }
-  //      })
-  //
-  //      rows.toMap
-  //    }catch{
-  //      case ex: Exception => println(s"err: ${ex.getMessage}")
-  //        val map = Map[String, Row]()
-  //        map
-  //    }
-  //  }
 
   def ensureTable(tableNameStr: String): Boolean = {
     client.ensureTableExists(tableNameStr) addCallback {
