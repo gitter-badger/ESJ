@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.apache.activemq:apollo-util:1.6:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-util/jars/apollo-util-1.6.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-util/docs/apollo-util-1.6-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-util/srcs/apollo-util-1.6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

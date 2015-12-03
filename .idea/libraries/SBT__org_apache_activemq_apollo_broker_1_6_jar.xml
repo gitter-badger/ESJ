@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.apache.activemq:apollo-broker:1.6:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-broker/jars/apollo-broker-1.6.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-broker/docs/apollo-broker-1.6-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/apollo-broker/srcs/apollo-broker-1.6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
