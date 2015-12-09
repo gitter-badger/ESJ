@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="SBT: org.apache.activemq:activemq-jaas:5.7.0:jar">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/activemq-jaas/bundles/activemq-jaas-5.7.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
