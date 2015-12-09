@@ -1,11 +1,26 @@
 package services.actor
 
+
 import akka.actor.{Actor, ActorLogging}
+import common.ConfHelper.ConfigHelper
 import common.HBaseHelper.{HBaseHelper, Row}
-import services.actor.RecommendActor.Query
+import services.actor.HBaseActor.SetRows
+import services.actor.LogActor.{Err, Info}
 import services.business.ServingLayer
 
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
+
+
 class RecommendActor extends Actor with ActorLogging {
+
+  import services.actor.RecommendActor._
+
+  val logActor = context.actorSelection("../LogActor")
+  val MQActor = context.actorSelection("../MQActor")
+  val HBaseActor = context.actorSelection("../HBaseActor")
+  val noRows = Map[String, Row]()
+
   def rec(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
     import scala.collection.mutable.{Map => muMap}
     val rows = muMap[String, Row]()
@@ -35,13 +50,30 @@ class RecommendActor extends Actor with ActorLogging {
     })
     rows.toMap
   }
+
   def receive = {
     case Query(matches, priorities) =>
+      Future(rec(matches, priorities)) onComplete {
+        case Success(rows) =>
+          if(rows != noRows)  {
+            logActor ! Info(s"")
+            HBaseActor ! SetRows(rows)
+            MQActor ! SetMQ(rows)
+          }
+        case Failure(ex) =>
+          logActor ! Err(s"")
+          Thread.sleep(interval)
+      }
+      Thread.sleep(interval)
+      self ! Query(matches, priorities)
 
   }
 }
 
 object RecommendActor {
   case class Query(matches: Map[String, Map[String, String]], priorities: Map[String, String])
+  case class SetMQ(rows: Map[String, Row])
+  val dynConfig = ConfigHelper.getConf()
+  val interval = dynConfig.getString("Actor.Scene.PullInterval").toInt
 
 }

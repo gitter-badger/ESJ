@@ -66,6 +66,24 @@ object HBaseHelper {
     }
   }
 
+  def setRows(table: String, rows: Map[String, Row]): Boolean = {
+    if (ensureTable(table) == false) {
+      println("table no exist")
+      return false
+    }
+
+    try {
+      rows.keys foreach(uid =>{
+        setRow(table, rows(uid))
+      })
+
+      true
+    } catch {
+      case ex: Exception => println(s"err: ${ex.getMessage}")
+        false
+    }
+  }
+
   def getRows(table: String, keys: Iterable[String]): ParMap[String, Row] = {
     import scala.collection.mutable.{Map => muMap}
     if (ensureTable(table) == false) {
