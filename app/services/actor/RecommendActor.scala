@@ -18,7 +18,7 @@ class RecommendActor extends Actor with ActorLogging {
 
   val logActor = context.actorSelection("../LogActor")
   val MQActor = context.actorSelection("../MQActor")
-  val HBaseActor = context.actorSelection("../HBaseActor")
+  val HBaseActor = context.actorSelection("../HBaseActor
   val noRows = Map[String, Row]()
 
   def rec(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
