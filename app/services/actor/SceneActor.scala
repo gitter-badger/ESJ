@@ -15,7 +15,7 @@ import scala.util.{Failure, Success}
 class SceneActor extends Actor with ActorLogging {
 
   import services.actor.LogActor.{Err, Info, Warn}
-  import services.actor.RecommendActor.Query
+  import services.actor.RecommendActor.QueryOryx
   import services.actor.SceneActor._
   import services.business.Scenes
 
@@ -62,7 +62,7 @@ class SceneActor extends Actor with ActorLogging {
         case Success(matches) =>
           if (matches != noMatches) {
             logActor ! Info(s"$name: Judge: $matches")
-            recommend ! Query(matches, priorities)
+            recommend ! QueryOryx(matches, priorities)
           }
         case Failure(ex) =>
           logActor ! Err(s"$name: Judge: $ex")

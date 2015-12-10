@@ -32,7 +32,6 @@ class MQTools(qhost: String) {
     } catch {
       case ex: Exception =>
         LogHelper.err(s"FqueueTools err at sendQueue, ${ex.getMessage}\n")
-        return false
     }
   }
 
@@ -43,7 +42,7 @@ class MQTools(qhost: String) {
     } catch {
       case ex: Exception =>
         LogHelper.err(s"FqueueTools err at receviveQueue, ${ex.getMessage}\n")
-        return null
+         null
     }
   }
 
@@ -51,11 +50,11 @@ class MQTools(qhost: String) {
   def close(): Boolean = {
     try{
       this.client.disconnect()
-      return true
+       true
     } catch {
       case ex: Exception =>
          LogHelper.err(s"FqueueTools err at close, ${ex.getMessage}\n")
-        return false
+         false
     }
   }
 }

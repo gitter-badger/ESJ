@@ -4,24 +4,25 @@ package services.actor
 import akka.actor.{Actor, ActorLogging}
 import common.ConfHelper.ConfigHelper
 import common.HBaseHelper.{HBaseHelper, Row}
-import services.actor.HBaseActor.SetRows
-import services.actor.LogActor.{Err, Info}
 import services.business.ServingLayer
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class RecommendActor extends Actor with ActorLogging {
 
   import services.actor.RecommendActor._
+  import services.actor.LogActor.{Err, Info}
+  import services.actor.PushActor.{SetToActiveMQ, SetToHBase}
 
+  val actorPath = context.self.path.toString.split("/")
+  val name = actorPath.last
   val logActor = context.actorSelection("../LogActor")
-  val MQActor = context.actorSelection("../MQActor")
-  val HBaseActor = context.actorSelection("../HBaseActor
+  val pushActor = context.actorSelection("../PushActor")
   val noRows = Map[String, Row]()
 
-  def rec(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
+  def queryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
     import scala.collection.mutable.{Map => muMap}
     val rows = muMap[String, Row]()
     matches.keys foreach(uid =>{
@@ -52,28 +53,25 @@ class RecommendActor extends Actor with ActorLogging {
   }
 
   def receive = {
-    case Query(matches, priorities) =>
-      Future(rec(matches, priorities)) onComplete {
+    case QueryOryx(matches, priorities) =>
+      Future(queryOryx(matches, priorities)) onComplete {
         case Success(rows) =>
           if(rows != noRows)  {
             logActor ! Info(s"")
-            HBaseActor ! SetRows(rows)
-            MQActor ! SetMQ(rows)
+            pushActor ! SetToHBase(rows)
+            pushActor ! SetToActiveMQ(rows)
           }
+
         case Failure(ex) =>
           logActor ! Err(s"")
-          Thread.sleep(interval)
       }
-      Thread.sleep(interval)
-      self ! Query(matches, priorities)
 
+      self ! QueryOryx(matches, priorities)
   }
 }
 
 object RecommendActor {
-  case class Query(matches: Map[String, Map[String, String]], priorities: Map[String, String])
-  case class SetMQ(rows: Map[String, Row])
+  case class QueryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String])
   val dynConfig = ConfigHelper.getConf()
   val interval = dynConfig.getString("Actor.Scene.PullInterval").toInt
-
 }

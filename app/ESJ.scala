@@ -42,8 +42,8 @@ class Boot extends Actor with ActorLogging {
     case Init =>
       /***** reasonable to pass ActorRef as a parameter? *****/
       Future(ParSeq(
-        (Props[MQActor], "MQActor"), (Props[RecommendActor], "RecommendActor"),
-        (Props[HBaseActor], "HBaseActor"), (Props[SceneActor], "SceneActor")
+        (Props[PushActor], "PushActor"), (Props[RecommendActor], "RecommendActor"),
+        (Props[SceneActor], "SceneActor")
       )) onComplete {
         case Success(props) =>
           val actors = props.map(prop =>
