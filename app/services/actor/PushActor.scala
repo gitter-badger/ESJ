@@ -23,11 +23,11 @@ class PushActor extends Actor with ActorLogging {
       Future(rows) onComplete {
         case Success(rows) =>
           if(rows != nullRows)  {
-            logActor ! Info(s"")
+            logActor ! Warn(s"$name: rows: no rows set to HBase")
             HBaseHelper.setRows("", rows)
           }
         case Failure(ex) =>
-          logActor ! Err(s"")
+          logActor ! Err(s"$name: rows: $ex")
       }
       self ! SetToHBase(rows)
 
@@ -35,7 +35,7 @@ class PushActor extends Actor with ActorLogging {
       Future(rows) onComplete {
         case Success(rows) =>
           if(rows != nullRows)  {
-            logActor ! Info(s"")
+            logActor ! Warn(s"$name: rows: no rows set to MQ")
             rows.keys foreach(uid =>{
               val row = rows(uid)
               val qualifersAndValues = row.qualifersAndValues
@@ -46,7 +46,7 @@ class PushActor extends Actor with ActorLogging {
           }
 
         case Failure(ex) =>
-          logActor ! Err(s"")
+          logActor ! Err(s"$name: rows: $ex")
       }
       self ! SetToActiveMQ(rows)
   }

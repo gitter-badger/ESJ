@@ -57,13 +57,13 @@ class RecommendActor extends Actor with ActorLogging {
       Future(queryOryx(matches, priorities)) onComplete {
         case Success(rows) =>
           if(rows != noRows)  {
-            logActor ! Info(s"")
+            logActor ! Warn(s"$name: rows: no rows set to pushActor")
             pushActor ! SetToHBase(rows)
             pushActor ! SetToActiveMQ(rows)
           }
 
         case Failure(ex) =>
-          logActor ! Err(s"")
+          logActor ! Err(s"$name: rows: $ex")
       }
 
       self ! QueryOryx(matches, priorities)

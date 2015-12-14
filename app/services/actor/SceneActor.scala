@@ -22,7 +22,7 @@ class SceneActor extends Actor with ActorLogging {
   val actorPath = context.self.path.toString.split("/")
   val name = actorPath.last
   val logActor = context.actorSelection("../LogActor")
-  val recommend = context.actorSelection("../LogActor")
+  val recommend = context.actorSelection("../RecommendActor")
   val noMatches = Map[String, Map[String, String]]()
 
   def receive = {
