@@ -4,14 +4,15 @@ import akka.actor.{Actor, ActorLogging}
 import common.ConfHelper.ConfigHelper
 import common.HBaseHelper.{HBaseHelper, Row}
 import common.MQHelper.MQHelper
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class PushActor extends Actor with ActorLogging {
+  import services.actor.LogActor.{Err, Warn}
   import services.actor.PushActor._
-  import services.actor.LogActor.{Err, Info}
 
   val actorPath = context.self.path.toString.split("/")
   val name = actorPath.last

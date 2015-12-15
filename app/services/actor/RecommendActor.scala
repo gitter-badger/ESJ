@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class RecommendActor extends Actor with ActorLogging {
 
   import services.actor.RecommendActor._
-  import services.actor.LogActor.{Err, Info}
+  import services.actor.LogActor.{Err, Warn}
   import services.actor.PushActor.{SetToActiveMQ, SetToHBase}
 
   val actorPath = context.self.path.toString.split("/")
