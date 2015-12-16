@@ -20,40 +20,40 @@ class PushActor extends Actor with ActorLogging {
   val nullRows = Map[String, Row]()
 
   def setToHBase(rows: Map[String, Row]) = {
-if (rows != nullRows) {
-HBaseHelper.setRows("testTable", rows)
-} else {
-logActor ! Warn(s"$name: rows: no rows set to HBase")
-}
-}
+    if (rows != nullRows) {
+      HBaseHelper.setRows("testTable", rows)
+    } else {
+      logActor ! Warn(s"$name: rows: no rows set to HBase")
+    }
+  }
 
   def setToActiveMQ(rows: Map[String, Row]) = {
-        if (rows != nullRows) {
-            rows.keys foreach(uid =>{
-                val row = rows(uid)
-                val qualifersAndValues = row.qualifersAndValues
-                val jsStr = s"""{ "uid":"${uid}", "TemplateId":"${qualifersAndValues("TemplateId")}", "SendTime": "${qualifersAndValues("SendTime")}", "Tags": "${qualifersAndValues("Tags")}", "Items": "${qualifersAndValues("Items")}", "Prioritie": "${qualifersAndValues("Prioritie")}"}"""
-                val mqueue =MQHelper.getMqueue()
-                mqueue.sendQueue("test", jsStr)
-              })
-          } else {
-            logActor ! Warn(s"$name: rows: no rows set to MQ")
-          }
-      }
+    if (rows != nullRows) {
+      rows.keys foreach(uid =>{
+        val row = rows(uid)
+        val qualifersAndValues = row.qualifersAndValues
+        val jsStr = s"""{ "uid":"${uid}", "TemplateId":"${qualifersAndValues("TemplateId")}", "SendTime": "${qualifersAndValues("SendTime")}", "Tags": "${qualifersAndValues("Tags")}", "Items": "${qualifersAndValues("Items")}", "Prioritie": "${qualifersAndValues("Prioritie")}"}"""
+        val mqueue =MQHelper.getMqueue()
+        mqueue.sendQueue("test", jsStr)
+      })
+    } else {
+      logActor ! Warn(s"$name: rows: no rows set to MQ")
+    }
+  }
 
   def receive = {
     case SetToHBase(rows) =>
       Future(setToHBase(rows)) onFailure {
-                case ex =>
+        case ex =>
           logActor ! Err(s"$name: rows: $ex")
-                    self ! SetToHBase(rows)
+          self ! SetToHBase(rows)
       }
 
     case SetToActiveMQ(rows) =>
       Future(setToActiveMQ(rows)) onFailure {
-                case ex =>
+        case ex =>
           logActor ! Err(s"$name: rows: $ex")
-                    self ! SetToActiveMQ(rows)
+          self ! SetToActiveMQ(rows)
       }
   }
 }
