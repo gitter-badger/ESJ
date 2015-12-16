@@ -11,7 +11,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class RecommendActor extends Actor with ActorLogging {
-
   import services.actor.RecommendActor._
   import services.actor.LogActor.{Err, Warn}
   import services.actor.PushActor.{SetToActiveMQ, SetToHBase}
@@ -41,9 +40,6 @@ class RecommendActor extends Actor with ActorLogging {
 }
 
 object RecommendActor {
-  case class QueryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String])
-  val dynConfig = ConfigHelper.getConf()
-  val trackTable = dynConfig.getString("Actor.Recommend.TrackTable")
 
   def queryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
     import scala.collection.mutable.{Map => muMap}
@@ -75,4 +71,7 @@ object RecommendActor {
     rows.toMap
   }
 
+  case class QueryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String])
+  val dynConfig = ConfigHelper.getConf()
+  val trackTable = dynConfig.getString("Actor.Recommend.TrackTable")
 }
