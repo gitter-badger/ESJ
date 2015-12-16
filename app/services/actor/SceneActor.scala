@@ -74,13 +74,9 @@ class SceneActor extends Actor with ActorLogging {
 }
 
 object SceneActor {
-
   object PullFq
-
   object LoadMap
-
   case class Judge(records: String, rules: Map[String, Map[String, JsValue]])
-
   object Pause
 
   def loadRules(rulesFile: String, sceneIds: Iterable[String]): Map[String, Map[String, JsValue]] = {

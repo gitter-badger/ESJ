@@ -22,6 +22,29 @@ class RecommendActor extends Actor with ActorLogging {
   val pushActor = context.actorSelection("../PushActor")
   val noRows = Map[String, Row]()
 
+  def receive = {
+    case QueryOryx(matches, priorities) =>
+      Future(queryOryx(matches, priorities)) onComplete {
+        case Success(rows) =>
+          if(rows != noRows)  {
+            logActor ! Warn(s"$name: QueryOryx: no rows set to pushActor")
+            pushActor ! SetToHBase(rows)
+            pushActor ! SetToActiveMQ(rows)
+          }
+
+        case Failure(ex) =>
+          logActor ! Err(s"$name: QueryOryx: $ex")
+      }
+
+      self ! QueryOryx(matches, priorities)
+  }
+}
+
+object RecommendActor {
+  case class QueryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String])
+  val dynConfig = ConfigHelper.getConf()
+  val trackTable = dynConfig.getString("Actor.Recommend.TrackTable")
+
   def queryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String]): Map[String, Row] ={
     import scala.collection.mutable.{Map => muMap}
     val rows = muMap[String, Row]()
@@ -30,7 +53,7 @@ class RecommendActor extends Actor with ActorLogging {
       val templateId = value.get("TemplateId").get
       val sendTime = value.get("SendTime").get
       val mprioritie = priorities.get(templateId).get.toInt
-      val rowPull = HBaseHelper.getRow("CWX_table", Iterable(uid)).get(uid).get
+      val rowPull = HBaseHelper.getRow(trackTable, Iterable(uid)).get(uid).get
       if (rowPull != null) {
         val qav = rowPull.qualifersAndValues
         val tprioritie = qav.get("Prioritie").get.toInt
@@ -52,26 +75,4 @@ class RecommendActor extends Actor with ActorLogging {
     rows.toMap
   }
 
-  def receive = {
-    case QueryOryx(matches, priorities) =>
-      Future(queryOryx(matches, priorities)) onComplete {
-        case Success(rows) =>
-          if(rows != noRows)  {
-            logActor ! Warn(s"$name: rows: no rows set to pushActor")
-            pushActor ! SetToHBase(rows)
-            pushActor ! SetToActiveMQ(rows)
-          }
-
-        case Failure(ex) =>
-          logActor ! Err(s"$name: rows: $ex")
-      }
-
-      self ! QueryOryx(matches, priorities)
-  }
-}
-
-object RecommendActor {
-  case class QueryOryx(matches: Map[String, Map[String, String]], priorities: Map[String, String])
-  val dynConfig = ConfigHelper.getConf()
-  val interval = dynConfig.getString("Actor.Scene.PullInterval").toInt
 }
