@@ -21,7 +21,7 @@ class PushActor extends Actor with ActorLogging {
 
   def setToHBase(rows: Map[String, Row]) = {
     if (rows != nullRows) {
-      HBaseHelper.setRows("testTable", rows)
+      HBaseHelper.setRows(sceneTable, rows)
     } else {
       logActor ! Warn(s"$name: rows: no rows set to HBase")
     }
@@ -34,7 +34,7 @@ class PushActor extends Actor with ActorLogging {
         val qualifersAndValues = row.qualifersAndValues
         val jsStr = s"""{ "uid":"${uid}", "TemplateId":"${qualifersAndValues("TemplateId")}", "SendTime": "${qualifersAndValues("SendTime")}", "Tags": "${qualifersAndValues("Tags")}", "Items": "${qualifersAndValues("Items")}", "Prioritie": "${qualifersAndValues("Prioritie")}"}"""
         val mqueue =MQHelper.getMqueue()
-        mqueue.sendQueue("test", jsStr)
+        mqueue.sendQueue(queue, jsStr)
       })
     } else {
       logActor ! Warn(s"$name: rows: no rows set to MQ")

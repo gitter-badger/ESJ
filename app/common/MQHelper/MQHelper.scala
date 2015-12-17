@@ -1,5 +1,6 @@
 package common.MQHelper
 
+import common.ConfHelper.ConfigHelper
 import common.LogHelper.LogHelper
 import org.apache.activemq.apollo.stomp.StompFrame
 import org.fusesource.stomp.scomp.{StompSubscription, StompClient}
@@ -8,13 +9,15 @@ import org.fusesource.stomp.scomp.{StompSubscription, StompClient}
  * Created by cwx on 15-11-28.
  */
 object MQHelper {
-  var fqueue: Option[MQTools] = None
+  var mqueue: Option[MQTools] = None
+  val dynConf = ConfigHelper.getConf()
+  val addr = dynConf.getString("MQueue.Address")
 
   def getMqueue(): MQTools = {
-    fqueue match {
+    mqueue match {
       case None =>
-        fqueue = Some(new MQTools("localhost"))
-        fqueue.get
+        mqueue = Some(new MQTools(addr))
+        mqueue.get
       case Some(queue) => queue
     }
   }
