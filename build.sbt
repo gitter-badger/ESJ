@@ -1,8 +1,8 @@
-name := "ESJ" //Email Scene Work
+name := "ESJ" //Email Scene Judge
 version := "0.1"
 
 scalaVersion := "2.10.5"
-ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
+//ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = false) }
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
@@ -20,4 +20,4 @@ libraryDependencies ++= Seq(
 //  "org.apache.hbase" % "hbase-common" % "1.1.1",
 //  "org.apache.hbase" % "hbase-server" % "1.1.1"
 )
-doc in Compile <<= target.map(_ / "none")
+//doc in Compile <<= target.map(_ / "none")
